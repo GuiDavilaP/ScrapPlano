@@ -1,24 +1,25 @@
 from bs4 import BeautifulSoup   # Biblioteca para fazer parsing do html.
 import requests                 # Biblioteca para fazer donwload do pdf do plano de ensino.
 from PyPDF2 import PdfReader    # Biblioteca para extrair texto do pdf.
-from fpdf import FPDF           # Biblioteca para criar PDFs.
+
+# Bibliotecas para criar PDFs com estilização.
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+
 import re                       # Biblioteca para fazer busca de padrões em texto.
 import os                       # Biblioteca usada para deletar arquivo temporário.
 
 #-------------------------------------------------------------------------
 def ParsePagina():
-    #--------Leitura do arquivo html--------#
+    # Lê o conteúdo do arquivo HTML
     caminho_arquivo_html = 'Cadeiras_2025_1.html' # Altere para o caminho do html da pagina.
-
     with open(caminho_arquivo_html, 'r', encoding='utf-8') as file:
         conteudo_html = file.read()
-
     soup = BeautifulSoup(conteudo_html, 'html.parser')
 
-    #--------Extraindo as cadeiras e os links dos seus respectivos planos de ensino--------#
     tabela_horarios = soup.find('table', id='Horarios')
-    #print(tabela_horarios.prettify()) # Exibe a tabela de horários.
-
     if not tabela_horarios:
         raise Exception('Tabela de horários não encontrada. Verifique o arquivo HTML.')
 
@@ -116,13 +117,13 @@ def ExtraiPlano(link_plano, nome_cadeira, deve_salvar):
         objetivos = ' '.join(objetivos.split())
 
         # Construindo o texto sumarizado.
-        plano_texto = f'Nome da Cadeira: {nome_cadeira}\n'
+        plano_texto = f'Nome:{nome_cadeira}\n'
         if professor:
             plano_texto += f'Professor Responsável: {professor.group(1)}\n'
         if sumula:
-            plano_texto += f'    Súmula: {sumula}\n'
+            plano_texto += f'    Súmula:\n {sumula}\n'
         if objetivos:
-            plano_texto += f'    Objetivos: {objetivos}\n'
+            plano_texto += f'    Objetivos:\n {objetivos}\n'
         
         print(f'  Plano de Ensino da cadeira {nome_cadeira} extraído com sucesso!')
 
@@ -134,6 +135,53 @@ def ExtraiPlano(link_plano, nome_cadeira, deve_salvar):
     else:
         print(f'  Erro ao baixar o PDF: {response.status_code}')
         return None
+
+#-------------------------------------------------------------------------
+# Gera PDF com título, professor, súmula e objetivo de cada cadeira de tópicos especiais.
+def geraSumario(planos_texto):
+    # Salvando todos os planos sumarizados em um único arquivo PDF.
+    doc = SimpleDocTemplate("Sumário_Planos_Ensino.pdf", pagesize=letter)
+    textoSumario = []
+
+    # Definindo estilos personalizados
+    estilos = getSampleStyleSheet()
+    estilos['Heading1'].fontSize = 13
+    estilos['Heading1'].leading = 13
+    estilos['Heading1'].spaceBefore = 10
+    estilos['Heading1'].spaceAfter = 0
+    estilos['Heading1'].fontName = 'Helvetica-Bold'
+
+    estilos['Heading2'].fontSize = 12
+    estilos['Heading2'].leading = 0
+    estilos['Heading2'].spaceBefore = 0
+    estilos['Heading2'].spaceAfter = 10
+    estilos['Heading2'].fontName = 'Helvetica-Bold'
+
+    estilos['Heading3'].fontSize = 12
+    estilos['Heading3'].leading = 0
+    estilos['Heading3'].spaceBefore = 0
+    estilos['Heading3'].spaceAfter = 5
+    estilos['Heading3'].fontName = 'Helvetica-Bold'
+
+    estilos.add(ParagraphStyle(name='CorpoTexto', alignment=TA_JUSTIFY, fontName='Helvetica', fontSize=12, leading=14, spaceBefore=0, spaceAfter=0))
+
+    # Adicionando conteúdo ao PDF
+    for plano_texto in planos_texto:
+        for line in plano_texto.split('\n'):
+            if line.startswith('Nome:'):
+                line = line.replace('Nome:', '').strip()
+                textoSumario.append(Paragraph(line, estilos['Heading1']))
+            elif line.startswith('Professor Responsável:'):
+                textoSumario.append(Paragraph(line, estilos['Heading2']))
+            elif line.startswith('    Súmula:'):
+                textoSumario.append(Paragraph(line, estilos['Heading3']))
+            elif line.startswith('    Objetivos:'):
+                textoSumario.append(Paragraph(line, estilos['Heading3']))
+            else:
+                textoSumario.append(Paragraph(line, estilos['CorpoTexto']))
+            textoSumario.append(Spacer(1, 12))
+
+    doc.build(textoSumario)
 
 #-------------------------------------------------------------------------
 def main():
@@ -157,15 +205,7 @@ def main():
         if plano_texto:
             planos_texto.append(plano_texto)
 
-    # Salvando todos os planos sumarizados em um único arquivo PDF.
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", size=12)
-    for plano_texto in planos_texto:
-        # Substituir caracteres especiais por seus equivalentes `latin-1` ou removê-los.
-        plano_texto = plano_texto.encode('latin-1', 'replace').decode('latin-1')
-        pdf.multi_cell(0, 8, plano_texto + '\n\n', align='J')  # Justificar o texto
-    pdf.output('Sumário_Planos_Ensino.pdf')
+    geraSumario(planos_texto)
+    print(" Sumário dos planos de ensino gerado com sucesso!")
 
 main()
