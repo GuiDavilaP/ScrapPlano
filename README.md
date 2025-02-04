@@ -5,10 +5,10 @@ Opcionalmente, também é possível salvar automaticamente todos os planos de en
 ## Como Rodar
 Apenas abra o terminal e utilize pip, ou outro gerenciador de pacotes de sua preferência, para instalar as dependências. 
 Comandos para instalar dependências com pip:
-pip install bs4
-pip install requests
-pip install PyPDF2
-pip install fpdf
+pip install bs4  
+pip install requests  
+pip install PyPDF2  
+pip install fpdf  
 
 * Obs: Esse código foi feito com Python 3.11
 
