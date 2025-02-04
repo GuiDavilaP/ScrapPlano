@@ -109,19 +109,15 @@ def ExtraiPlano(link_plano, nome_cadeira, deve_salvar):
         
         # Extraindo informações específicas.
         professor = re.search(r'Professor Responsável: (.+)', texto_completo)
-        sumula = re.search(r'Súmula\n(.+?)(?=\n[A-Z])', texto_completo, re.DOTALL).group(1).strip()
         objetivos = re.search(r'Objetivos\n(.+?)(?=\nConteúdo Programático)', texto_completo, re.DOTALL).group(1).strip()
 
         # Remover novas linhas desnecessárias
-        sumula = ' '.join(sumula.split())
         objetivos = ' '.join(objetivos.split())
 
-        # Construindo o texto sumarizado.
+        # Construindo o texto resumido.
         plano_texto = f'Nome:{nome_cadeira}\n'
         if professor:
             plano_texto += f'Professor Responsável: {professor.group(1)}\n'
-        if sumula:
-            plano_texto += f'    Súmula:\n {sumula}\n'
         if objetivos:
             plano_texto += f'    Objetivos:\n {objetivos}\n'
         
@@ -138,10 +134,10 @@ def ExtraiPlano(link_plano, nome_cadeira, deve_salvar):
 
 #-------------------------------------------------------------------------
 # Gera PDF com título, professor, súmula e objetivo de cada cadeira de tópicos especiais.
-def geraSumario(planos_texto):
-    # Salvando todos os planos sumarizados em um único arquivo PDF.
-    doc = SimpleDocTemplate("Sumário_Planos_Ensino.pdf", pagesize=letter)
-    textoSumario = []
+def geraResumo(planos_texto):
+    # Salvando todos os planos resumidos em um único arquivo PDF.
+    doc = SimpleDocTemplate("Resumo_Planos_Ensino.pdf", pagesize=letter)
+    textoResumo = []
 
     # Definindo estilos personalizados
     estilos = getSampleStyleSheet()
@@ -170,18 +166,16 @@ def geraSumario(planos_texto):
         for line in plano_texto.split('\n'):
             if line.startswith('Nome:'):
                 line = line.replace('Nome:', '').strip()
-                textoSumario.append(Paragraph(line, estilos['Heading1']))
+                textoResumo.append(Paragraph(line, estilos['Heading1']))
             elif line.startswith('Professor Responsável:'):
-                textoSumario.append(Paragraph(line, estilos['Heading2']))
-            elif line.startswith('    Súmula:'):
-                textoSumario.append(Paragraph(line, estilos['Heading3']))
+                textoResumo.append(Paragraph(line, estilos['Heading2']))
             elif line.startswith('    Objetivos:'):
-                textoSumario.append(Paragraph(line, estilos['Heading3']))
+                textoResumo.append(Paragraph(line, estilos['Heading3']))
             else:
-                textoSumario.append(Paragraph(line, estilos['CorpoTexto']))
-            textoSumario.append(Spacer(1, 12))
+                textoResumo.append(Paragraph(line, estilos['CorpoTexto']))
+            textoResumo.append(Spacer(1, 12))
 
-    doc.build(textoSumario)
+    doc.build(textoResumo)
 
 #-------------------------------------------------------------------------
 def main():
@@ -205,7 +199,7 @@ def main():
         if plano_texto:
             planos_texto.append(plano_texto)
 
-    geraSumario(planos_texto)
-    print(" Sumário dos planos de ensino gerado com sucesso!")
+    geraResumo(planos_texto)
+    print(" Resumo dos planos de ensino gerado com sucesso!")
 
 main()
