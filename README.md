@@ -1,5 +1,5 @@
 # ScrapPlano
-Esse código cria um pdf resumido com os dados principais dos planos de ensino de cada cadeira do tipo Tópico Especial para facilitar a consulta. 
+Esse projeto cria um pdf resumido com os dados principais dos planos de ensino de cada cadeira do tipo Tópico Especial para facilitar a consulta. 
 Opcionalmente, também é possível salvar automaticamente todos os planos de ensino dessas cadeiras na sua máquina escrevendo 's' quando questionado no terminal.
 
 ## Como Rodar
@@ -9,7 +9,7 @@ Comando: pip install -r requirements.txt
 * Obs: Esse código foi feito com Python 3.12.4
 
 ## Atualizando os horários das cadeiras
-No repositório o HTML com os horários das cadeiras do semestre de 2025/1 já está disponível, mas se estiver em um semestre futuro e quiser rodar o código com os horários de cadeiras atualizado precisará baixar o HTML novamente:
+No repositório, o HTML com os horários das cadeiras do semestre de 2025/1 já está disponível, mas se estiver em um semestre futuro e quiser rodar o código com os horários de cadeiras atualizado precisará baixar o HTML novamente:
  - Entre no portal do aluno e navegue para Aluno --> Informações do Aluno ou Matrícula --> Horários e Vagas por Grupo de Matrícula.
  - Selecione seu curso.
  - Aperte F12 para abrir as ferramenteas de desenvolvedor e navegue para a aba "Console"
